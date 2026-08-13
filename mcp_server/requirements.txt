@@ -1,5 +1,4 @@
-requests
-feedparser
-psycopg2-binary
 databricks-sdk>=0.81.0
+psycopg2-binary
+fastmcp>=3.2.0
 sentence-transformers
