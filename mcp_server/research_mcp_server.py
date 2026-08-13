@@ -22,6 +22,8 @@ from fastmcp import FastMCP
  
 import lakebase
 from embeddings import embed_query
+from ingestion import ingest_and_embed
+
  
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("research-mcp-server")
@@ -34,23 +36,46 @@ def search_papers(goal_text: str, top_k: int = 6) -> list[dict]:
     """
     Busca los papers mas relevantes semanticamente para un objetivo de
     aprendizaje o pregunta de investigacion.
- 
+
     Args:
         goal_text: Descripcion del objetivo de aprendizaje o pregunta.
         top_k: Numero maximo de papers a devolver (default 6).
- 
+
     Returns:
         Una lista de dicts con paper_id, title, abstract, doi, oa_url.
+        Lista vacia si no hay papers suficientemente relevantes.
     """
     try:
         vec = embed_query(goal_text)
-        return lakebase.run_query(
+        rows = lakebase.run_query(
             "SELECT * FROM search_papers(%s::vector, %s)",
             (json.dumps(vec), top_k),
         )
+        return [r for r in rows if r["distance"] <= RELEVANCE_THRESHOLD]
     except Exception as e:
         logger.exception("search_papers fallo")
         return [{"error": str(e)}]
+
+
+@mcp.tool
+def ingest_topic(query: str, per_source: int = 15) -> dict:
+    """
+    Busca e indexa papers nuevos sobre un tema que search_papers no cubre
+    todavia. Usar SOLO si search_papers no devolvio resultados relevantes.
+
+    Args:
+        query: Tema o pregunta a buscar en OpenAlex/arXiv.
+        per_source: Cuantos papers pedir a cada fuente (default 15).
+
+    Returns:
+        Un dict con la cantidad de
+    """
+    try:
+        n = ingest_and_embed(query, per_source=per_source)
+        return {"papers_agregados": n }
+    except Exception as e:
+        logger.exception("ingest_topic fallo")
+        return {"error": str(e)}   
  
  
 @mcp.tool
