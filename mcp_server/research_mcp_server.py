@@ -29,8 +29,9 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("research-mcp-server")
  
 mcp = FastMCP("research-copilot")
- 
- 
+
+RELEVANCE_THRESHOLD = 0.85 
+
 @mcp.tool
 def search_papers(goal_text: str, top_k: int = 6) -> list[dict]:
     """
