@@ -1,0 +1,15 @@
+command:
+  - "streamlit"
+  - "run"
+  - "app.py"
+
+resources:
+  - name: requirements
+    source:
+      path: ./requirements.txt
+
+env:
+  - name: LAKEBASE_ENDPOINT
+    valueFrom: postgres
+  - name: AGENT_APP_URL
+    value: "https://agent-copilot-7474654788094941.aws.databricksapps.com"
