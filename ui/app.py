@@ -45,21 +45,27 @@ st.caption("Chat, colecciones y seguimiento de lectura sobre tu base de papers")
 tab_chat, tab_collections, tab_progress = st.tabs(["💬 Chat", "📁 Colecciones", "📊 Progreso"])
 
 with tab_chat:
-    if "messages" not in st.session_state:
-        st.session_state.messages = []
-    for m in st.session_state.messages:
+    if "api_history" not in st.session_state:
+        st.session_state.api_history = []
+    if "display" not in st.session_state:
+        st.session_state.display = []
+
+    for m in st.session_state.display:
         with st.chat_message(m["role"]):
             st.write(m["content"])
+
     prompt = st.chat_input("Pregunta algo sobre papers...")
     if prompt:
-        st.session_state.messages.append({"role": "user", "content": prompt})
+        st.session_state.display.append({"role": "user", "content": prompt})
+        st.session_state.api_history.append({"role": "user", "content": prompt})
         with st.chat_message("user"):
             st.write(prompt)
         with st.chat_message("assistant"):
             with st.spinner("Buscando..."):
-                reply = ask_agent(st.session_state.messages)
-            st.write(reply)
-        st.session_state.messages.append({"role": "assistant", "content": reply})
+                reply_text, output_items = ask_agent(st.session_state.api_history)
+            st.write(reply_text)
+        st.session_state.api_history.extend(output_items)
+        st.session_state.display.append({"role": "assistant", "content": reply_text})
 
 with tab_collections:
     with st.expander("➕ Nueva colección"):

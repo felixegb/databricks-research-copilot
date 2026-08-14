@@ -33,5 +33,3 @@ def ask_agent(messages: list[dict]) -> tuple[str, list[dict]]:
                     texts.append(block.get("text", ""))
     reply_text = "\n".join(texts) if texts else "(sin respuesta)"
     return reply_text, output_items
-
-

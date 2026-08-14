@@ -1,5 +1,4 @@
 import streamlit as st
-
 from lakebase import run_query, run_write, run_write_returning
 
 DEFAULT_EMAIL = "felixemilio9312@gmail.com"
@@ -8,6 +7,7 @@ DEFAULT_EMAIL = "felixemilio9312@gmail.com"
 def get_current_email() -> str:
     email = st.context.headers.get("x-forwarded-email")
     return email or DEFAULT_EMAIL
+
 
 def get_or_create_user(email: str) -> str:
     rows = run_query("SELECT user_id FROM users WHERE email = %s", (email,))
@@ -18,23 +18,6 @@ def get_or_create_user(email: str) -> str:
         (email.split("@")[0], email),
     )
     return str(row["user_id"])
-
-def create_collection(user_id: str, name: str) -> str:
-    row = run_write_returning(
-        "INSERT INTO collections (user_id, name) VALUES (%s, %s) RETURNING collection_id",
-        (user_id, name),
-    )
-    return str(row["collection_id"])
-
-def get_or_create_user(email: str) -> str:
-    rows = run_query("SELECT user_id FROM users WHERE email = %s", (email,))
-    if rows:
-        return str(rows[0]["user_id"])
-    rows = run_query(
-        "INSERT INTO users (name, email) VALUES (%s, %s) RETURNING user_id",
-        (email.split("@")[0], email),
-    )
-    return str(rows[0]["user_id"])
 
 
 def list_collections(user_id: str):
@@ -52,11 +35,11 @@ def list_collections(user_id: str):
 
 
 def create_collection(user_id: str, name: str) -> str:
-    rows = run_query(
+    row = run_write_returning(
         "INSERT INTO collections (user_id, name) VALUES (%s, %s) RETURNING collection_id",
         (user_id, name),
     )
-    return str(rows[0]["collection_id"])
+    return str(row["collection_id"])
 
 
 def list_collection_papers(collection_id: str, user_id: str):
