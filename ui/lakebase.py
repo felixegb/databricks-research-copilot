@@ -13,6 +13,12 @@ PGDATABASE = os.environ["PGDATABASE"]
 PGUSER = os.environ["PGUSER"]
 LAKEBASE_ENDPOINT = os.environ["LAKEBASE_ENDPOINT"]
 
+def run_write_returning(sql, params=None):
+    with get_connection() as conn, conn.cursor() as cur:
+        cur.execute(sql, params)
+        row = cur.fetchone()
+        conn.commit()
+        return row
 
 @contextmanager
 def get_connection():
